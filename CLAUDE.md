@@ -89,8 +89,9 @@ arcana-app/
 - **M1**: 設計書 + Next.js スキャフォルド + 空ページ3つ。
 - **M2**: 78枚デッキ + シャッフルロジック + 画像同梱 + 「今日の1枚」。
 - **M3**: `/api/reading` で Claude が鑑定文を生成（Sonnet 4.6、effort=low、IPレート制限 5/分）。
-- **M4（このコミット）**: 占いフローUI（質問→スプレッド選択→カード演出→鑑定→履歴保存）。
-- M5以降は `docs/PLAN.md` を参照。
+- **M4**: 占いフローUI（質問→スプレッド選択→カード演出→鑑定→履歴保存）。
+- **M5**: 履歴UI（`/history`、新しい順一覧、詳細展開、個別/全削除）。
+- **M6（このコミット）**: PWA仕上げ（六芒星アイコン、本格SW、Vercelデプロイ手順をREADMEに追記）。
 
 ### M4で増えたもの
 
@@ -98,6 +99,18 @@ arcana-app/
 - `components/TarotCardView.tsx` — Framer Motionで3Dフリップ + 逆位置回転
 - `components/SpreadLayout.tsx` — スプレッド別レイアウト（single / row / 2×5 grid）
 - `lib/history.ts` — `localStorage` CRUD（バージョン付きキー、最新100件保持）
+
+### M5で増えたもの
+
+- `app/history/page.tsx` — `lib/history.ts` から読み込んで新しい順表示、詳細展開はFramer Motion、個別/全削除UI
+
+### M6で増えたもの
+
+- `scripts/generate-icons.mjs` — 六芒星モチーフのアイコンを sharp で生成（192/512、maskable safe area 配慮）
+- `public/icons/icon-192.png`, `icon-512.png` — 生成済みアイコン
+- `public/sw.js` — 本実装（network-first for HTML, cache-first for static, no cache for /api/*, バージョン bump で旧キャッシュ自動破棄）
+- `public/manifest.webmanifest` — `purpose: any` と `maskable` の両方を含む完全版
+- README に Vercel デプロイ手順を追記
 
 ### M2で増えたもの
 

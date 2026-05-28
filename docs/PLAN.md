@@ -81,32 +81,38 @@
 
 ---
 
-## M5 — 履歴機能
+## M5 — 履歴機能 ✅
 
 **ゴール**: 過去の占い結果を見返せる。
 
-- `lib/history.ts` — `localStorage` への CRUD
+- [x] `lib/history.ts` — `localStorage` への CRUD（M4で導入済）
   - キー: `arcana:history:v1`
   - エントリ: `Reading`（`DATA_MODEL.md`参照）
-- `/history` ページ：一覧 + 詳細展開
-- 件数上限（例: 最新100件）と削除UI
+  - 最新100件保持、読み込み時バリデーション
+- [x] `/history` ページ：新しい順の一覧 + 詳細展開（Framer Motionで折りたたみ）
+- [x] 削除UI: 個別削除（confirm付き） + 全削除（confirm付き）
+- [x] 空状態のUI（「占いを始める」CTA）
 
-**完了基準**: 占い結果が履歴に出る／消せる。
+**完了基準**: 占い結果が履歴に出る／消せる。 → ✅ SSR時は「読み込み中…」、ハイドレーション後にlocalStorageから読み込んで表示
 
 ---
 
-## M6 — PWA仕上げ & デプロイ
+## M6 — PWA仕上げ & デプロイ ✅（コード側完了）
 
 **ゴール**: iPhoneのホーム画面に追加できる、Vercel本番URLが動く。
 
-- `public/manifest.webmanifest` 完成（name, short_name, icons, theme_color, background_color, display: standalone）
-- アイコン（192/512、maskable）を `public/icons/` に配置
-- `sw.js` で静的アセットのキャッシュ（API はキャッシュしない）
-- `<head>` に Apple用メタタグ（`apple-touch-icon`, `apple-mobile-web-app-capable` 等）
-- Vercelに `ANTHROPIC_API_KEY` を設定してデプロイ
-- README にデプロイ手順を追記
+- [x] `public/manifest.webmanifest` 完成（name, short_name, description, icons[any+maskable], theme_color, background_color, display: standalone, lang, categories）
+- [x] アイコン: `public/icons/icon-192.png` と `icon-512.png` を六芒星モチーフでプログラム生成（`scripts/generate-icons.mjs`、maskable safe area 60%圏内に配置）
+- [x] `sw.js` 本実装:
+  - `/api/*` は常にネットワーク（キャッシュしない）
+  - HTML はnetwork-first（オフラインフォールバックあり）
+  - `/cards/*`, `/icons/*`, `/_next/static/*`, `/manifest.webmanifest` は cache-first
+  - バージョン bump で旧キャッシュ自動破棄
+- [x] `<head>` の Apple/PWA メタタグは `app/layout.tsx` の `metadata` + `viewport` から自動出力
+- [x] README にVercelデプロイ手順を追記
+- [ ] **Vercel本番デプロイ**: 環境にAnthropic APIキーがないため未実施。README手順に従ってユーザー側で実施する。
 
-**完了基準**: iPhone Safari で「ホーム画面に追加」→ スタンドアロン起動できる。
+**完了基準**: iPhone Safari で「ホーム画面に追加」→ スタンドアロン起動できる。 → ⏳ 本番URLでの実機確認はデプロイ後
 
 ---
 
