@@ -38,9 +38,18 @@ export default function RootLayout({
             <Link href="/" className="font-serif text-2xl tracking-wide text-arcana-accent">
               arcana
             </Link>
-            <nav className="flex gap-5 text-sm text-arcana-muted">
+            <nav className="flex flex-wrap justify-end gap-x-3 gap-y-1 text-xs text-arcana-muted sm:text-sm">
               <Link href="/reading" className="hover:text-arcana-text">
-                占う
+                タロット
+              </Link>
+              <Link href="/zodiac" className="hover:text-arcana-text">
+                星座
+              </Link>
+              <Link href="/animal" className="hover:text-arcana-text">
+                動物
+              </Link>
+              <Link href="/numerology" className="hover:text-arcana-text">
+                数秘
               </Link>
               <Link href="/history" className="hover:text-arcana-text">
                 履歴

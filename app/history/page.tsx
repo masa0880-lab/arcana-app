@@ -1,12 +1,22 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { getAnimal } from '@/data/animals';
 import { getCardById } from '@/data/deck';
+import { getLifePathProfile } from '@/data/numerology';
 import { getSpread } from '@/data/spreads';
-import { clearHistory, deleteReading, loadHistory } from '@/lib/history';
-import type { Reading } from '@/types/tarot';
+import { getZodiacSign } from '@/data/zodiac';
+import { clearHistory, deleteEntry, loadHistory } from '@/lib/history';
+import type {
+  AnimalHistoryEntry,
+  HistoryEntry,
+  NumerologyHistoryEntry,
+  ZodiacHistoryEntry,
+} from '@/types/divination';
+import type { Reading as TarotReading } from '@/types/tarot';
 
 function pad2(n: number): string {
   return String(n).padStart(2, '0');
@@ -18,40 +28,69 @@ function formatDateTime(iso: string): string {
   return `${d.getFullYear()}/${pad2(d.getMonth() + 1)}/${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
-function truncate(s: string, max = 60): string {
+function truncate(s: string, max = 80): string {
   if (s.length <= max) return s;
   return s.slice(0, max) + '…';
 }
 
+const KIND_LABELS: Record<string, string> = {
+  tarot: 'タロット',
+  numerology: '数秘術',
+  zodiac: '星座占い',
+  animal: '動物占い',
+};
+
+function summary(entry: HistoryEntry): string {
+  const kind = entry.kind ?? 'tarot';
+  switch (kind) {
+    case 'tarot': {
+      const r = entry as TarotReading;
+      return truncate(r.question, 80);
+    }
+    case 'numerology': {
+      const e = entry as NumerologyHistoryEntry;
+      const profile = getLifePathProfile(e.lifePathNumber);
+      return `ライフパス ${e.lifePathNumber} — ${profile.title}`;
+    }
+    case 'zodiac': {
+      const e = entry as ZodiacHistoryEntry;
+      const sign = getZodiacSign(e.signId);
+      return sign ? `${sign.nameJa}の今日の運勢` : '星座占い';
+    }
+    case 'animal': {
+      const e = entry as AnimalHistoryEntry;
+      const animal = getAnimal(e.animalId);
+      return animal ? `あなたは「${animal.nameJa}」` : '動物占い';
+    }
+    default:
+      return '';
+  }
+}
+
 export default function HistoryPage() {
-  const [readings, setReadings] = useState<Reading[] | null>(null);
+  const [entries, setEntries] = useState<HistoryEntry[] | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   function refresh() {
-    // 新しい順に表示（保存は末尾追加なので reverse）
-    setReadings([...loadHistory()].reverse());
+    setEntries([...loadHistory()].reverse());
   }
 
   useEffect(() => {
     refresh();
   }, []);
 
-  if (readings === null) {
-    return (
-      <p className="text-center text-sm text-arcana-muted">読み込み中…</p>
-    );
+  if (entries === null) {
+    return <p className="text-center text-sm text-arcana-muted">読み込み中…</p>;
   }
 
-  if (readings.length === 0) {
+  if (entries.length === 0) {
     return (
       <div className="space-y-6 text-center">
         <h1 className="font-serif text-3xl text-arcana-accent">履歴</h1>
-        <p className="text-arcana-muted">
-          まだ占いの履歴はありません。
-        </p>
+        <p className="text-arcana-muted">まだ鑑定の履歴はありません。</p>
         <div className="pt-2">
           <Link
-            href="/reading"
+            href="/"
             className="inline-block rounded-full border border-arcana-accent/60 bg-arcana-accent/10 px-6 py-2 text-sm text-arcana-accent transition hover:bg-arcana-accent/20"
           >
             占いを始める
@@ -68,13 +107,16 @@ export default function HistoryPage() {
     if (typeof window !== 'undefined' && !window.confirm('この鑑定を削除しますか？')) {
       return;
     }
-    deleteReading(id);
+    deleteEntry(id);
     refresh();
     if (expandedId === id) setExpandedId(null);
   }
 
   function handleClearAll() {
-    if (typeof window !== 'undefined' && !window.confirm('履歴をすべて削除しますか？この操作は取り消せません。')) {
+    if (
+      typeof window !== 'undefined' &&
+      !window.confirm('履歴をすべて削除しますか？この操作は取り消せません。')
+    ) {
       return;
     }
     clearHistory();
@@ -95,30 +137,28 @@ export default function HistoryPage() {
         </button>
       </header>
       <p className="text-xs text-arcana-muted">
-        {readings.length}件 — このブラウザのlocalStorageにのみ保存されています。
+        {entries.length}件 — このブラウザのlocalStorageにのみ保存されています。
       </p>
 
       <ul className="space-y-2">
-        {readings.map((r) => {
-          const spread = getSpread(r.spreadId);
-          const expanded = expandedId === r.id;
+        {entries.map((e) => {
+          const kind = e.kind ?? 'tarot';
+          const label = KIND_LABELS[kind] ?? kind;
+          const expanded = expandedId === e.id;
           return (
-            <li
-              key={r.id}
-              className="rounded-xl border border-white/5 bg-arcana-surface/50"
-            >
+            <li key={e.id} className="rounded-xl border border-white/5 bg-arcana-surface/50">
               <button
                 type="button"
-                onClick={() => setExpandedId(expanded ? null : r.id)}
+                onClick={() => setExpandedId(expanded ? null : e.id)}
                 className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left"
                 aria-expanded={expanded}
               >
                 <div className="min-w-0 flex-1 space-y-1">
                   <p className="text-[10px] uppercase tracking-[0.2em] text-arcana-muted">
-                    {formatDateTime(r.createdAt)} ・ {spread?.name ?? r.spreadId}
+                    {formatDateTime(e.createdAt)} ・ {label}
                   </p>
                   <p className="truncate font-serif text-base text-arcana-text">
-                    {truncate(r.question, 80)}
+                    {summary(e)}
                   </p>
                 </div>
                 <span
@@ -141,11 +181,11 @@ export default function HistoryPage() {
                     className="overflow-hidden"
                   >
                     <div className="space-y-4 border-t border-white/5 px-4 pb-4 pt-3">
-                      <ReadingDetail reading={r} />
+                      <Detail entry={e} />
                       <div className="flex justify-end">
                         <button
                           type="button"
-                          onClick={() => handleDelete(r.id)}
+                          onClick={() => handleDelete(e.id)}
                           className="text-xs text-arcana-muted hover:text-arcana-danger"
                         >
                           この鑑定を削除
@@ -163,46 +203,147 @@ export default function HistoryPage() {
   );
 }
 
-function ReadingDetail({ reading }: { reading: Reading }) {
-  const spread = getSpread(reading.spreadId);
-  return (
-    <div className="space-y-3">
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.2em] text-arcana-muted">
-          引かれたカード
-        </p>
-        <ul className="mt-2 flex flex-wrap gap-2">
-          {reading.drawnCards.map((dc) => {
-            const card = getCardById(dc.cardId);
-            if (!card) return null;
-            const pos = spread?.positions[dc.position];
-            return (
-              <li
-                key={`${dc.cardId}-${dc.position}`}
-                className="rounded-lg border border-white/5 bg-arcana-bg/40 px-3 py-2"
-              >
-                <p className="text-[9px] text-arcana-muted">
-                  {pos?.label ?? `位置${dc.position + 1}`}
-                </p>
-                <p className="text-sm text-arcana-accentSoft">
-                  {card.name}
-                  <span className="ml-1 text-[10px] text-arcana-muted">
-                    {dc.orientation === 'upright' ? '正' : '逆'}
-                  </span>
-                </p>
-              </li>
-            );
-          })}
-        </ul>
+function Detail({ entry }: { entry: HistoryEntry }) {
+  const kind = entry.kind ?? 'tarot';
+  if (kind === 'tarot') {
+    const r = entry as TarotReading;
+    const spread = getSpread(r.spreadId);
+    return (
+      <div className="space-y-3">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-arcana-muted">
+            質問
+          </p>
+          <p className="text-sm text-arcana-text">{r.question}</p>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-arcana-muted">
+            引かれたカード
+          </p>
+          <ul className="mt-2 flex flex-wrap gap-2">
+            {r.drawnCards.map((dc) => {
+              const card = getCardById(dc.cardId);
+              if (!card) return null;
+              const pos = spread?.positions[dc.position];
+              return (
+                <li
+                  key={`${dc.cardId}-${dc.position}`}
+                  className="rounded-lg border border-white/5 bg-arcana-bg/40 px-3 py-2"
+                >
+                  <p className="text-[9px] text-arcana-muted">
+                    {pos?.label ?? `位置${dc.position + 1}`}
+                  </p>
+                  <p className="text-sm text-arcana-accentSoft">
+                    {card.name}
+                    <span className="ml-1 text-[10px] text-arcana-muted">
+                      {dc.orientation === 'upright' ? '正' : '逆'}
+                    </span>
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-arcana-muted">
+            鑑定文
+          </p>
+          <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-arcana-text">
+            {r.interpretation}
+          </p>
+        </div>
       </div>
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.2em] text-arcana-muted">
-          鑑定文
-        </p>
-        <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-arcana-text">
-          {reading.interpretation}
+    );
+  }
+
+  if (kind === 'numerology') {
+    const e = entry as NumerologyHistoryEntry;
+    const profile = getLifePathProfile(e.lifePathNumber);
+    return (
+      <div className="space-y-3">
+        <div className="flex items-baseline gap-3">
+          <p className="font-serif text-3xl text-arcana-accent">{e.lifePathNumber}</p>
+          <div>
+            <p className="font-serif text-base text-arcana-text">{profile.title}</p>
+            <p className="text-[10px] text-arcana-muted">
+              {e.birth.year}年{e.birth.month}月{e.birth.day}日
+              {e.name ? ` ・ ${e.name}` : ''}
+            </p>
+          </div>
+        </div>
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-arcana-text">
+          {e.interpretation}
         </p>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (kind === 'zodiac') {
+    const e = entry as ZodiacHistoryEntry;
+    const sign = getZodiacSign(e.signId);
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          {sign && (
+            <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-arcana-accent/30">
+              <Image
+                src={sign.imagePath}
+                alt={sign.nameJa}
+                fill
+                sizes="64px"
+                className="object-cover"
+              />
+            </div>
+          )}
+          <div>
+            <p className="font-serif text-base text-arcana-accent">
+              {sign?.nameJa ?? e.signId}
+            </p>
+            <p className="text-[10px] text-arcana-muted">
+              {e.birth.year}年{e.birth.month}月{e.birth.day}日生まれ
+            </p>
+          </div>
+        </div>
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-arcana-text">
+          {e.interpretation}
+        </p>
+      </div>
+    );
+  }
+
+  if (kind === 'animal') {
+    const e = entry as AnimalHistoryEntry;
+    const animal = getAnimal(e.animalId);
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          {animal && (
+            <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-arcana-accent/30">
+              <Image
+                src={animal.imagePath}
+                alt={animal.nameJa}
+                fill
+                sizes="64px"
+                className="object-cover"
+              />
+            </div>
+          )}
+          <div>
+            <p className="font-serif text-base text-arcana-accent">
+              {animal?.nameJa ?? e.animalId}
+            </p>
+            <p className="text-[10px] text-arcana-muted">
+              個性ナンバー {e.characterNumber} ・{' '}
+              {e.birth.year}年{e.birth.month}月{e.birth.day}日生まれ
+            </p>
+          </div>
+        </div>
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-arcana-text">
+          {e.interpretation}
+        </p>
+      </div>
+    );
+  }
+
+  return null;
 }
