@@ -6,7 +6,7 @@
 //   - /_next/static/* など → cache-first
 // 注意: バージョン文字列を更新すると旧キャッシュは activate で破棄される。
 
-const VERSION = 'arcana-v2';
+const VERSION = 'arcana-v3';
 const STATIC_CACHE = `${VERSION}-static`;
 
 // プリキャッシュ対象: 起動直後にオフラインでも開ける最小セット
@@ -62,6 +62,8 @@ self.addEventListener('fetch', (event) => {
   // 静的アセット: cache-first
   if (
     url.pathname.startsWith('/cards/') ||
+    url.pathname.startsWith('/zodiac/') ||
+    url.pathname.startsWith('/animals/') ||
     url.pathname.startsWith('/icons/') ||
     url.pathname.startsWith('/_next/static/') ||
     url.pathname === '/manifest.webmanifest'

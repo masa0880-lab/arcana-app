@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
 import { getCardById } from '@/data/deck';
 import { getSpread } from '@/data/spreads';
+import { getClientIp, isRateLimited } from '@/lib/rateLimit';
 import type {
   DrawnCard,
   ReadingRequest,
@@ -12,32 +13,6 @@ import type {
 export const runtime = 'nodejs';
 
 const MODEL = process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6';
-
-const RATE_LIMIT = 5;
-const RATE_WINDOW_MS = 60_000;
-// 単一インスタンス前提の素朴な実装。Vercelのサーバーレスではコールドスタートでリセットされ
-// 完全には防げないが、悪意のない連打抑止には十分。本格運用ではUpstash Redis等を検討する。
-const ipBuckets = new Map<string, number[]>();
-
-function getClientIp(request: Request): string {
-  const fwd = request.headers.get('x-forwarded-for');
-  if (fwd) return fwd.split(',')[0].trim();
-  const real = request.headers.get('x-real-ip');
-  if (real) return real.trim();
-  return 'unknown';
-}
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const bucket = (ipBuckets.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
-  if (bucket.length >= RATE_LIMIT) {
-    ipBuckets.set(ip, bucket);
-    return true;
-  }
-  bucket.push(now);
-  ipBuckets.set(ip, bucket);
-  return false;
-}
 
 const SYSTEM_PROMPT = `あなたは経験豊富で誠実なタロット占い師です。ユーザーが引いたカードと質問をもとに、思いやりがあり、現実的で、内省を促す鑑定文を日本語で綴ってください。
 
@@ -152,7 +127,7 @@ export async function POST(request: Request) {
   }
 
   const ip = getClientIp(request);
-  if (isRateLimited(ip)) {
+  if (isRateLimited('tarot', ip)) {
     return NextResponse.json(
       { error: 'リクエストが多すぎます。少し時間を置いて再度お試しください。' },
       { status: 429 }

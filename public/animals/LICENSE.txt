@@ -1,0 +1,8 @@
+Animal silhouette icons in this directory are derived from Twemoji,
+licensed under CC-BY 4.0 by Twitter, Inc and other contributors.
+Source: https://github.com/twitter/twemoji
+License: https://creativecommons.org/licenses/by/4.0/
+
+This project recolors the original emoji SVGs to a single gold tone
+and composites them on a dark gradient background. The recoloring is
+performed by scripts/generate-animal-icons.mjs.
