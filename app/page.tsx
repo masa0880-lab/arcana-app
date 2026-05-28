@@ -1,6 +1,16 @@
 import Link from 'next/link';
+import { DailyCard } from '@/components/DailyCard';
+import { getCardById } from '@/data/deck';
+import { getDailyCard } from '@/lib/deck';
+
+// 今日の1枚は日付シードで決まるので、その日のうちはサーバーで毎リクエスト同じ結果。
+// next: 60秒キャッシュ程度で十分（日付が変わるまで同じ）。
+export const revalidate = 60;
 
 export default function HomePage() {
+  const drawn = getDailyCard();
+  const card = getCardById(drawn.cardId);
+
   return (
     <div className="space-y-12">
       <section className="space-y-4 text-center">
@@ -28,10 +38,15 @@ export default function HomePage() {
       </section>
 
       <section className="rounded-2xl border border-white/5 bg-arcana-surface/60 p-6">
-        <h2 className="font-serif text-xl text-arcana-accent">今日の1枚</h2>
-        <p className="mt-2 text-sm text-arcana-muted">
-          ※ M2 で実装予定。日付シードで1日固定のカードがここに表示されます。
-        </p>
+        <div className="mb-4 flex items-baseline justify-between">
+          <h2 className="font-serif text-xl text-arcana-accent">今日の1枚</h2>
+          <span className="text-xs text-arcana-muted">日付ごとに固定</span>
+        </div>
+        {card ? (
+          <DailyCard card={card} drawn={drawn} />
+        ) : (
+          <p className="text-sm text-arcana-muted">カードを読み込めませんでした。</p>
+        )}
       </section>
     </div>
   );

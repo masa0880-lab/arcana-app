@@ -1,0 +1,18 @@
+Rider-Waite Tarot Card Images
+=============================
+
+The 78 card images in this directory are derived from the Rider-Waite
+Tarot deck (Pamela Colman Smith / Arthur Edward Waite, 1909), which is
+in the public domain in the United States, the United Kingdom, and
+Japan.
+
+Source images: https://github.com/searge/tarot
+License: The Unlicense (public domain dedication)
+
+The images were resized to a maximum width of 600px and re-encoded as
+WebP (quality 80) by scripts/convert-cards.mjs in this repository.
+
+To regenerate:
+
+  git clone --depth=1 https://github.com/searge/tarot.git /tmp/searge-tarot
+  node scripts/convert-cards.mjs

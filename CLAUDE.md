@@ -86,8 +86,23 @@ arcana-app/
 
 詳細は `docs/PLAN.md` を参照。
 
-- **M1（このコミット）**: 設計書 + Next.js スキャフォルド + 空ページ3つ。
-- M2以降の内容は `docs/PLAN.md` を見ること。本ガイドはM1完了時点の状態を反映している。
+- **M1**: 設計書 + Next.js スキャフォルド + 空ページ3つ。
+- **M2（このコミット）**: 78枚デッキ + シャッフルロジック + 画像同梱 + 「今日の1枚」。
+- M3以降は `docs/PLAN.md` を参照。
+
+### M2で増えたもの
+
+- `data/deck.ts` — 78枚のカードデータ（ID/名前/キーワード/画像パス）
+- `data/spreads.ts` — 3スプレッド定義
+- `lib/deck.ts` — `shuffleDeck` / `drawCards` / `getDailyCard`
+- `lib/__tests__/` — Vitestテスト
+- `public/cards/*.webp` — Rider–Waite 78枚（Unlicense, searge/tarot 由来）
+- `scripts/convert-cards.mjs` — JPG→WebP変換スクリプト（再生成用）
+
+### テスト
+
+- `npm test` — Vitestで一括実行（純関数 + 画像ファイル存在確認）
+- `npm run test:watch` — 監視モード
 
 ---
 

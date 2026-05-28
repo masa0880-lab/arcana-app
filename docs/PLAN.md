@@ -23,17 +23,21 @@
 
 ---
 
-## M2 — 78枚デッキとシャッフル
+## M2 — 78枚デッキとシャッフル ✅
 
 **ゴール**: 78枚のカードデータと、シード可能なシャッフル/正逆ロジックがある。
 
-- `data/deck.ts` に大アルカナ22 + 小アルカナ56（Wands/Cups/Swords/Pentacles 各14）を定義。
-  - 各カードに `id` / `name` / `arcana` / `suit?` / `number` / `keywords.upright[]` / `keywords.reversed[]` / `imagePath` を持たせる。
-- `lib/deck.ts`：
-  - `shuffleDeck(seed?: string): Card[]` — 決定論的シャッフル（履歴再現用にseed対応）
-  - `drawCards(count, seed?): DrawnCard[]` — 正位置/逆位置をランダム付与
-  - `getDailyCard(date: Date): DrawnCard` — 日付シードで1日固定
-- `lib/__tests__/deck.test.ts` で重複なし・78枚・seedで再現性を確認。
+- [x] `data/deck.ts` に大アルカナ22 + 小アルカナ56を定義（日本語名 + 英語名 + 正逆キーワード）
+- [x] `data/spreads.ts` に3スプレッド（single / three-card / celtic-cross）を定義
+- [x] `lib/deck.ts`：
+  - `shuffleDeck(seed?)` — Fisher–Yates + Mulberry32（決定論的）
+  - `drawCards(count, seed?)` — 正位置/逆位置付与、決定論的
+  - `getDailyCard(date)` — 日付シードで1日固定
+- [x] `lib/__tests__/deck.test.ts` で重複なし・78枚・seed再現性をテスト（22ケース）
+- [x] `lib/__tests__/card-images.test.ts` で78枚分の画像ファイル存在確認
+- [x] Vitestをテストランナーとして導入（`npm test` / `npm run test:watch`）
+- [x] Rider–Waite画像78枚を `public/cards/` にWebP同梱（出典: searge/tarot, Unlicense）
+- [x] `/` トップに「今日の1枚」を実装（カード画像 + 名前 + キーワード）
 
 **完了基準**: シャッフル/ドローが純関数として動き、テストが通る。
 
