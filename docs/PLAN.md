@@ -43,19 +43,22 @@
 
 ---
 
-## M3 — Anthropic API 連携（鑑定文生成）
+## M3 — Anthropic API 連携（鑑定文生成）✅
 
 **ゴール**: 引いたカード+質問+スプレッドからClaudeが鑑定文を返す。
 
-- `app/api/reading/route.ts`（POST）：
+- [x] `app/api/reading/route.ts`（POST）：
   - リクエスト: `{ question, spreadId, drawnCards: DrawnCard[] }`
-  - サーバー側で `ANTHROPIC_API_KEY` を使い `@anthropic-ai/sdk` 経由でClaudeを呼ぶ。
-  - レスポンス: `{ interpretation: string, perCard?: string[] }`
-- プロンプト設計：スプレッド種別ごとにシステムプロンプトを切り替え（過去/現在/未来、ケルト十字の各位置の意味など）。
-- レート制限の簡易対策（同一IPで連打されたとき429を返す等）。
-- エラー時は鑑定中止＋メッセージ表示。
+  - サーバー側で `ANTHROPIC_API_KEY` を使い `@anthropic-ai/sdk` 経由でClaudeを呼ぶ
+  - レスポンス: `{ interpretation: string }`
+- [x] モデル: `claude-sonnet-4-6`（`ANTHROPIC_MODEL` env で上書き可能）
+  - `thinking: { type: 'disabled' }` + `output_config: { effort: 'low' }` でコスト最適化
+- [x] バリデーション: 質問空 / 500字超過 / 不正スプレッド / 枚数不一致 / 存在しないカードID
+- [x] プロンプト設計：システムプロンプトに占い師のスタンス・文体・安全配慮を集約、ユーザーメッセージでスプレッド種別と位置の意味（日英）+ カード詳細を渡す
+- [x] レート制限：同一IP 5回/分（in-memoryバケット、Vercel本格運用ではUpstash推奨と注釈）
+- [x] エラー時のメッセージ表示（401 / 429 / APIエラー / その他）
 
-**完了基準**: Postman/curlで叩いて鑑定文が返ってくる。フロントは未配線でOK。
+**完了基準**: curlで叩いて鑑定文が返ってくる。フロントは未配線でOK。 → ✅ バリデーション/レート制限/Anthropic呼び出しの全パスを動作確認
 
 ---
 

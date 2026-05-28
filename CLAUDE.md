@@ -87,8 +87,9 @@ arcana-app/
 詳細は `docs/PLAN.md` を参照。
 
 - **M1**: 設計書 + Next.js スキャフォルド + 空ページ3つ。
-- **M2（このコミット）**: 78枚デッキ + シャッフルロジック + 画像同梱 + 「今日の1枚」。
-- M3以降は `docs/PLAN.md` を参照。
+- **M2**: 78枚デッキ + シャッフルロジック + 画像同梱 + 「今日の1枚」。
+- **M3（このコミット）**: `/api/reading` で Claude が鑑定文を生成（Sonnet 4.6、effort=low、IPレート制限 5/分）。
+- M4以降は `docs/PLAN.md` を参照。
 
 ### M2で増えたもの
 
@@ -98,6 +99,14 @@ arcana-app/
 - `lib/__tests__/` — Vitestテスト
 - `public/cards/*.webp` — Rider–Waite 78枚（Unlicense, searge/tarot 由来）
 - `scripts/convert-cards.mjs` — JPG→WebP変換スクリプト（再生成用）
+
+### M3で増えたもの
+
+- `app/api/reading/route.ts` — POST: 質問+カード → Claudeで鑑定文生成
+- システムプロンプトに占い師のスタンス・文体・安全配慮を集約
+- `@anthropic-ai/sdk` を追加（dependency）
+- モデルは `claude-sonnet-4-6` 既定、`ANTHROPIC_MODEL` env で上書き可能
+- in-memoryで IP 5回/分のレート制限（本番ではUpstash推奨）
 
 ### テスト
 
