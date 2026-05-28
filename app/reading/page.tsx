@@ -88,7 +88,11 @@ export default function ReadingPage() {
         interpretation: data.interpretation,
         seed,
       };
-      saveReading(reading);
+      try {
+        saveReading(reading);
+      } catch (err) {
+        console.warn('history save failed:', err);
+      }
 
       setPhase('result');
     } catch (e) {

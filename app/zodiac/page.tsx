@@ -61,7 +61,11 @@ export default function ZodiacPage() {
         signId: payload.signId,
         interpretation: payload.interpretation,
       };
-      saveEntry(entry);
+      try {
+        saveEntry(entry);
+      } catch (err) {
+        console.warn('history save failed:', err);
+      }
 
       setPhase('result');
     } catch (e) {

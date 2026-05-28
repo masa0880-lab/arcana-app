@@ -1,22 +1,23 @@
-// arcana-app Service Worker
+// arcana-app Service Worker (v4)
 // 戦略:
 //   - /api/*  → 常にネットワーク（キャッシュしない）
-//   - /cards/*, /icons/*, /manifest.webmanifest → cache-first（静的アセット）
-//   - HTML（ナビゲーション）→ network-first、失敗時はキャッシュ（オフラインフォールバック）
-//   - /_next/static/* など → cache-first
-// 注意: バージョン文字列を更新すると旧キャッシュは activate で破棄される。
+//   - /cards/*, /zodiac/*, /animals/*, /icons/*, /manifest.webmanifest → cache-first（静的アセット）
+//   - /_next/static/* → network-first（古いchunkの取り違いを避ける）
+//   - HTML（ナビゲーション）→ network-first、失敗時はキャッシュ
+//
+// v4 で行うこと:
+//   - 旧バージョンの全キャッシュを破棄
+//   - アクティブ化時に全クライアントへ "reload" を通知（自分が掴んでいる古いJSを捨てさせる）
 
-const VERSION = 'arcana-v3';
+const VERSION = 'arcana-v4';
 const STATIC_CACHE = `${VERSION}-static`;
 
-// プリキャッシュ対象: 起動直後にオフラインでも開ける最小セット
-const PRECACHE_URLS = ['/', '/reading', '/history', '/manifest.webmanifest'];
+const PRECACHE_URLS = ['/', '/reading', '/zodiac', '/animal', '/numerology', '/history', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(STATIC_CACHE);
-      // 失敗しても install を止めない（ネットワーク不通でも登録は通す）
       await Promise.allSettled(
         PRECACHE_URLS.map((url) =>
           cache.add(new Request(url, { cache: 'reload' })).catch(() => undefined)
@@ -31,12 +32,16 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
       const keys = await caches.keys();
+      // 旧バージョンの全キャッシュ削除
       await Promise.all(
-        keys
-          .filter((k) => k !== STATIC_CACHE)
-          .map((k) => caches.delete(k))
+        keys.filter((k) => k !== STATIC_CACHE).map((k) => caches.delete(k))
       );
       await self.clients.claim();
+      // 既存タブに「新SWに切り替わったので再読み込みして」と通知
+      const clientsList = await self.clients.matchAll({ type: 'window' });
+      for (const c of clientsList) {
+        c.postMessage({ type: 'arcana-sw-updated' });
+      }
     })()
   );
 });
@@ -46,8 +51,6 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
-
-  // 同一オリジン以外は何もしない
   if (url.origin !== self.location.origin) return;
 
   // API は常にネットワーク（キャッシュしない）
@@ -59,21 +62,27 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 静的アセット: cache-first
+  // Next.js の build artifact (JS/CSS chunks): network-first
+  // 内容ハッシュ付きとはいえ、SWキャッシュとビルド世代のズレを避けるためネットワーク優先
+  if (url.pathname.startsWith('/_next/static/')) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // 自作の静的アセット (cards, zodiac, animals, icons, manifest): cache-first
   if (
     url.pathname.startsWith('/cards/') ||
     url.pathname.startsWith('/zodiac/') ||
     url.pathname.startsWith('/animals/') ||
     url.pathname.startsWith('/icons/') ||
-    url.pathname.startsWith('/_next/static/') ||
     url.pathname === '/manifest.webmanifest'
   ) {
     event.respondWith(cacheFirst(request));
     return;
   }
 
-  // それ以外（フォント等）: cache-first（取れなければそのまま）
-  event.respondWith(cacheFirst(request));
+  // それ以外: ネットワーク優先
+  event.respondWith(networkFirst(request));
 });
 
 async function cacheFirst(request) {
@@ -103,7 +112,6 @@ async function networkFirst(request) {
   } catch (err) {
     const cached = await cache.match(request);
     if (cached) return cached;
-    // 最終フォールバック: ルートの当該キャッシュ
     const root = await cache.match('/');
     if (root) return root;
     throw err;
