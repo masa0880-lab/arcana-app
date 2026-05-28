@@ -88,8 +88,16 @@ arcana-app/
 
 - **M1**: 設計書 + Next.js スキャフォルド + 空ページ3つ。
 - **M2**: 78枚デッキ + シャッフルロジック + 画像同梱 + 「今日の1枚」。
-- **M3（このコミット）**: `/api/reading` で Claude が鑑定文を生成（Sonnet 4.6、effort=low、IPレート制限 5/分）。
-- M4以降は `docs/PLAN.md` を参照。
+- **M3**: `/api/reading` で Claude が鑑定文を生成（Sonnet 4.6、effort=low、IPレート制限 5/分）。
+- **M4（このコミット）**: 占いフローUI（質問→スプレッド選択→カード演出→鑑定→履歴保存）。
+- M5以降は `docs/PLAN.md` を参照。
+
+### M4で増えたもの
+
+- `app/reading/page.tsx` — 5フェーズ（input/revealing/loading/result/error）の状態機械
+- `components/TarotCardView.tsx` — Framer Motionで3Dフリップ + 逆位置回転
+- `components/SpreadLayout.tsx` — スプレッド別レイアウト（single / row / 2×5 grid）
+- `lib/history.ts` — `localStorage` CRUD（バージョン付きキー、最新100件保持）
 
 ### M2で増えたもの
 
