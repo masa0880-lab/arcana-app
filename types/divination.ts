@@ -49,6 +49,8 @@ export interface AnimalType {
 
 export type LifePathNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 11 | 22 | 33;
 
+export type PalmHand = 'right' | 'left';
+
 export interface BirthDate {
   year: number; // 例: 1990
   month: number; // 1-12
@@ -87,6 +89,17 @@ export interface AnimalResponse {
   interpretation: string;
 }
 
+export interface PalmRequest {
+  hand: PalmHand;
+  /** data URL (data:image/jpeg;base64,...) */
+  image: string;
+}
+
+export interface PalmResponse {
+  hand: PalmHand;
+  interpretation: string;
+}
+
 // ---- 履歴の統合エントリ（discriminated union）----
 
 import type { Reading as TarotReading } from './tarot';
@@ -95,7 +108,8 @@ export type HistoryEntry =
   | (TarotReading & { kind?: 'tarot' })
   | NumerologyHistoryEntry
   | ZodiacHistoryEntry
-  | AnimalHistoryEntry;
+  | AnimalHistoryEntry
+  | PalmHistoryEntry;
 
 export interface NumerologyHistoryEntry {
   kind: 'numerology';
@@ -123,5 +137,16 @@ export interface AnimalHistoryEntry {
   birth: BirthDate;
   animalId: AnimalId;
   characterNumber: number;
+  interpretation: string;
+}
+
+/**
+ * 手相鑑定の履歴。画像はプライバシー保護のため一切保存しない。
+ */
+export interface PalmHistoryEntry {
+  kind: 'palm';
+  id: string;
+  createdAt: string;
+  hand: PalmHand;
   interpretation: string;
 }
