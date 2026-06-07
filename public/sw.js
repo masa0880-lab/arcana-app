@@ -9,10 +9,10 @@
 //   - 旧バージョンの全キャッシュを破棄
 //   - アクティブ化時に全クライアントへ "reload" を通知（自分が掴んでいる古いJSを捨てさせる）
 
-const VERSION = 'arcana-v4';
+const VERSION = 'arcana-v5';
 const STATIC_CACHE = `${VERSION}-static`;
 
-const PRECACHE_URLS = ['/', '/reading', '/zodiac', '/animal', '/numerology', '/history', '/manifest.webmanifest'];
+const PRECACHE_URLS = ['/', '/reading', '/zodiac', '/animal', '/numerology', '/palm', '/history', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

@@ -33,6 +33,8 @@ function isValidEntry(value: unknown): value is HistoryEntry {
       return !!r.birth && typeof r.signId === 'string';
     case 'animal':
       return !!r.birth && typeof r.animalId === 'string';
+    case 'palm':
+      return r.hand === 'right' || r.hand === 'left';
     default:
       return false;
   }

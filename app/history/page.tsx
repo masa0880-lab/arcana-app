@@ -14,6 +14,7 @@ import type {
   AnimalHistoryEntry,
   HistoryEntry,
   NumerologyHistoryEntry,
+  PalmHistoryEntry,
   ZodiacHistoryEntry,
 } from '@/types/divination';
 import type { Reading as TarotReading } from '@/types/tarot';
@@ -38,6 +39,7 @@ const KIND_LABELS: Record<string, string> = {
   numerology: '数秘術',
   zodiac: '星座占い',
   animal: '動物占い',
+  palm: '手相占い',
 };
 
 function summary(entry: HistoryEntry): string {
@@ -61,6 +63,10 @@ function summary(entry: HistoryEntry): string {
       const e = entry as AnimalHistoryEntry;
       const animal = getAnimal(e.animalId);
       return animal ? `あなたは「${animal.nameJa}」` : '動物占い';
+    }
+    case 'palm': {
+      const e = entry as PalmHistoryEntry;
+      return e.hand === 'right' ? '右手の手相' : '左手の手相';
     }
     default:
       return '';
@@ -338,6 +344,20 @@ function Detail({ entry }: { entry: HistoryEntry }) {
             </p>
           </div>
         </div>
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-arcana-text">
+          {e.interpretation}
+        </p>
+      </div>
+    );
+  }
+
+  if (kind === 'palm') {
+    const e = entry as PalmHistoryEntry;
+    return (
+      <div className="space-y-3">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-arcana-muted">
+          {e.hand === 'right' ? '右手' : '左手'} ・ 画像は保存されていません
+        </p>
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-arcana-text">
           {e.interpretation}
         </p>

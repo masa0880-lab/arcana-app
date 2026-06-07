@@ -32,6 +32,12 @@ const DIVINATIONS = [
     description: '生年月日から、人生のテーマと特性を導く',
     accent: 'NUMEROLOGY',
   },
+  {
+    href: '/palm',
+    title: '手相占い',
+    description: '手のひらの写真から、Claudeが線を読み解く',
+    accent: 'PALM',
+  },
 ];
 
 export default function HomePage() {
@@ -48,7 +54,7 @@ export default function HomePage() {
           答えは現れる。
         </h1>
         <p className="mx-auto max-w-md text-arcana-muted text-balance">
-          タロット、星座、動物、数秘術 — 4つの方法であなたの問いを照らします。Claudeがあなたのために鑑定文を綴ります。
+          タロット、星座、動物、数秘術、手相 — 5つの方法であなたの問いを照らします。Claudeがあなたのために鑑定文を綴ります。
         </p>
       </section>
 
