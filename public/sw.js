@@ -9,10 +9,10 @@
 //   - 旧バージョンの全キャッシュを破棄
 //   - アクティブ化時に全クライアントへ "reload" を通知（自分が掴んでいる古いJSを捨てさせる）
 
-const VERSION = 'arcana-v5';
+const VERSION = 'arcana-v6';
 const STATIC_CACHE = `${VERSION}-static`;
 
-const PRECACHE_URLS = ['/', '/reading', '/zodiac', '/animal', '/numerology', '/palm', '/history', '/manifest.webmanifest'];
+const PRECACHE_URLS = ['/', '/reading', '/zodiac', '/animal', '/numerology', '/palm', '/rokusei', '/history', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -69,11 +69,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 自作の静的アセット (cards, zodiac, animals, icons, manifest): cache-first
+  // 自作の静的アセット (cards, zodiac, animals, rokusei, icons, manifest): cache-first
   if (
     url.pathname.startsWith('/cards/') ||
     url.pathname.startsWith('/zodiac/') ||
     url.pathname.startsWith('/animals/') ||
+    url.pathname.startsWith('/rokusei/') ||
     url.pathname.startsWith('/icons/') ||
     url.pathname === '/manifest.webmanifest'
   ) {
