@@ -35,6 +35,12 @@ function isValidEntry(value: unknown): value is HistoryEntry {
       return !!r.birth && typeof r.animalId === 'string';
     case 'palm':
       return r.hand === 'right' || r.hand === 'left';
+    case 'rokusei':
+      return (
+        !!r.birth &&
+        typeof r.starId === 'string' &&
+        typeof r.currentCycleId === 'string'
+      );
     default:
       return false;
   }

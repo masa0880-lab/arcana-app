@@ -38,6 +38,12 @@ const DIVINATIONS = [
     description: '手のひらの写真から、Claudeが線を読み解く',
     accent: 'PALM',
   },
+  {
+    href: '/rokusei',
+    title: '六星占術',
+    description: '生年月日から、星のタイプと今年の運命周期を導く',
+    accent: 'SIX STARS',
+  },
 ];
 
 export default function HomePage() {
@@ -54,7 +60,7 @@ export default function HomePage() {
           答えは現れる。
         </h1>
         <p className="mx-auto max-w-md text-arcana-muted text-balance">
-          タロット、星座、動物、数秘術、手相 — 5つの方法であなたの問いを照らします。Claudeがあなたのために鑑定文を綴ります。
+          タロット、星座、動物、数秘術、手相、六星占術 — 6つの方法であなたの問いを照らします。Claudeがあなたのために鑑定文を綴ります。
         </p>
       </section>
 

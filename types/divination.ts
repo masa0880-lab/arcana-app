@@ -51,6 +51,46 @@ export type LifePathNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 11 | 22 | 33;
 
 export type PalmHand = 'right' | 'left';
 
+export type RokuseiStarId =
+  | 'saturn'
+  | 'venus'
+  | 'mars'
+  | 'uranus'
+  | 'jupiter'
+  | 'mercury';
+
+export type RokuseiPolarity = '+' | '-';
+
+export type RokuseiCycleId =
+  | 'seed'
+  | 'sprout'
+  | 'bloom'
+  | 'fragile'
+  | 'achieve'
+  | 'turmoil'
+  | 'reunion'
+  | 'wealth'
+  | 'stable'
+  | 'shadow'
+  | 'pause'
+  | 'decline';
+
+export interface RokuseiStar {
+  id: RokuseiStarId;
+  nameJa: string;
+  nameEn: string;
+  symbol: string; // ♄♀♂♅♃☿
+  element: string;
+  imagePath: string;
+}
+
+export interface RokuseiCycle {
+  id: RokuseiCycleId;
+  nameJa: string;
+  description: string;
+  isDaisakkai: boolean;
+}
+
 export interface BirthDate {
   year: number; // 例: 1990
   month: number; // 1-12
@@ -100,6 +140,18 @@ export interface PalmResponse {
   interpretation: string;
 }
 
+export interface RokuseiRequest {
+  birth: BirthDate;
+}
+
+export interface RokuseiResponse {
+  starId: RokuseiStarId;
+  polarity: RokuseiPolarity;
+  fortuneNumber: number; // 1-60
+  currentCycleId: RokuseiCycleId; // 今年の運命周期
+  interpretation: string;
+}
+
 // ---- 履歴の統合エントリ（discriminated union）----
 
 import type { Reading as TarotReading } from './tarot';
@@ -109,7 +161,8 @@ export type HistoryEntry =
   | NumerologyHistoryEntry
   | ZodiacHistoryEntry
   | AnimalHistoryEntry
-  | PalmHistoryEntry;
+  | PalmHistoryEntry
+  | RokuseiHistoryEntry;
 
 export interface NumerologyHistoryEntry {
   kind: 'numerology';
@@ -148,5 +201,17 @@ export interface PalmHistoryEntry {
   id: string;
   createdAt: string;
   hand: PalmHand;
+  interpretation: string;
+}
+
+export interface RokuseiHistoryEntry {
+  kind: 'rokusei';
+  id: string;
+  createdAt: string;
+  birth: BirthDate;
+  starId: RokuseiStarId;
+  polarity: RokuseiPolarity;
+  fortuneNumber: number;
+  currentCycleId: RokuseiCycleId;
   interpretation: string;
 }

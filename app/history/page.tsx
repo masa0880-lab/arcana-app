@@ -10,11 +10,13 @@ import { getLifePathProfile } from '@/data/numerology';
 import { getSpread } from '@/data/spreads';
 import { getZodiacSign } from '@/data/zodiac';
 import { clearHistory, deleteEntry, loadHistory } from '@/lib/history';
+import { getRokuseiCycle, getRokuseiStar } from '@/data/rokusei';
 import type {
   AnimalHistoryEntry,
   HistoryEntry,
   NumerologyHistoryEntry,
   PalmHistoryEntry,
+  RokuseiHistoryEntry,
   ZodiacHistoryEntry,
 } from '@/types/divination';
 import type { Reading as TarotReading } from '@/types/tarot';
@@ -40,6 +42,7 @@ const KIND_LABELS: Record<string, string> = {
   zodiac: '星座占い',
   animal: '動物占い',
   palm: '手相占い',
+  rokusei: '六星占術',
 };
 
 function summary(entry: HistoryEntry): string {
@@ -67,6 +70,11 @@ function summary(entry: HistoryEntry): string {
     case 'palm': {
       const e = entry as PalmHistoryEntry;
       return e.hand === 'right' ? '右手の手相' : '左手の手相';
+    }
+    case 'rokusei': {
+      const e = entry as RokuseiHistoryEntry;
+      const star = getRokuseiStar(e.starId);
+      return star ? `${star.nameJa}（${e.polarity}）` : '六星占術';
     }
     default:
       return '';
@@ -358,6 +366,41 @@ function Detail({ entry }: { entry: HistoryEntry }) {
         <p className="text-[10px] uppercase tracking-[0.2em] text-arcana-muted">
           {e.hand === 'right' ? '右手' : '左手'} ・ 画像は保存されていません
         </p>
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-arcana-text">
+          {e.interpretation}
+        </p>
+      </div>
+    );
+  }
+
+  if (kind === 'rokusei') {
+    const e = entry as RokuseiHistoryEntry;
+    const star = getRokuseiStar(e.starId);
+    const cycle = getRokuseiCycle(e.currentCycleId);
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          {star && (
+            <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border border-arcana-accent/30">
+              <Image
+                src={star.imagePath}
+                alt={star.nameJa}
+                fill
+                sizes="64px"
+                className="object-cover"
+              />
+            </div>
+          )}
+          <div>
+            <p className="font-serif text-base text-arcana-accent">
+              {star?.nameJa ?? e.starId}（{e.polarity}）
+            </p>
+            <p className="text-[10px] text-arcana-muted">
+              {e.birth.year}年{e.birth.month}月{e.birth.day}日生まれ
+              {cycle ? ` ・ 周期: ${cycle.nameJa}${cycle.isDaisakkai ? '(警戒期)' : ''}` : ''}
+            </p>
+          </div>
+        </div>
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-arcana-text">
           {e.interpretation}
         </p>
